@@ -9,15 +9,17 @@ import { format } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Terminal } from 'lucide-react';
 import { updateOrderStatus } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function OrderManagement() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -29,8 +31,10 @@ export function OrderManagement() {
             });
             setOrders(allOrders);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching orders: ", error);
+            setError(null);
+        }, (err) => {
+            console.error("Error fetching orders: ", err);
+            setError("Could not fetch orders. Please make sure the database is set up correctly.");
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.' });
             setLoading(false);
         });
@@ -51,6 +55,24 @@ export function OrderManagement() {
         return <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><div className="space-y-2"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div></CardContent></Card>;
     }
 
+    if (error) {
+     return (
+        <Card>
+            <CardHeader>
+                <CardTitle>All Orders</CardTitle>
+                <CardDescription>View and manage all incoming orders.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Alert variant="destructive">
+                    <Terminal className="h-4 w-4" />
+                    <AlertTitle>Error Fetching Orders</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            </CardContent>
+        </Card>
+      );
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -58,6 +80,11 @@ export function OrderManagement() {
                 <CardDescription>View and manage all incoming orders.</CardDescription>
             </CardHeader>
             <CardContent>
+                 {orders.length === 0 ? (
+                    <div className="text-center py-12">
+                        <p className="text-muted-foreground">No orders have been placed yet.</p>
+                    </div>
+                ) : (
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -73,7 +100,7 @@ export function OrderManagement() {
                             <TableRow key={order.id}>
                                 <TableCell>
                                     <div className="font-medium">{order.userEmail}</div>
-                                    <div className="text-xs text-muted-foreground">{format(order.createdAt.toDate(), 'PPp')}</div>
+                                    <div className="text-xs text-muted-foreground">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</div>
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</TableCell>
                                 <TableCell className="hidden sm:table-cell text-center">₹{order.total}</TableCell>
@@ -97,6 +124,7 @@ export function OrderManagement() {
                         ))}
                     </TableBody>
                 </Table>
+                )}
             </CardContent>
         </Card>
     );

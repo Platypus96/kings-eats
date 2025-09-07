@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Terminal } from 'lucide-react';
 import { deleteMenuItem } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { EditMenuItemDialog } from './edit-menu-item-dialog';
@@ -14,10 +14,12 @@ import { Badge } from '../ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 export function MenuManagement() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<MenuItem | null>(null);
     const { toast } = useToast();
@@ -31,8 +33,10 @@ export function MenuManagement() {
             });
             setMenuItems(items);
             setLoading(false);
-        }, (error) => {
-            console.error("Error fetching menu items: ", error);
+            setError(null);
+        }, (err) => {
+            console.error("Error fetching menu items: ", err);
+            setError("Could not fetch menu items. Please make sure the database is set up correctly.");
             toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch menu items.' });
             setLoading(false);
         });
@@ -67,6 +71,24 @@ export function MenuManagement() {
     if (loading) {
         return <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><div className="space-y-2"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div></CardContent></Card>;
     }
+    
+    if (error) {
+     return (
+        <Card>
+            <CardHeader>
+                 <CardTitle>Menu Items</CardTitle>
+                 <CardDescription>Add, edit, or remove items from the menu.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Alert variant="destructive">
+                    <Terminal className="h-4 w-4" />
+                    <AlertTitle>Error Fetching Menu</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            </CardContent>
+        </Card>
+      );
+    }
 
     return (
         <Card>
@@ -81,6 +103,11 @@ export function MenuManagement() {
                 </Button>
             </CardHeader>
             <CardContent>
+                 {menuItems.length === 0 ? (
+                    <div className="text-center py-12">
+                        <p className="text-muted-foreground">No menu items found. Click "Add Item" to get started.</p>
+                    </div>
+                ) : (
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -126,6 +153,7 @@ export function MenuManagement() {
                         ))}
                     </TableBody>
                 </Table>
+                )}
             </CardContent>
             <EditMenuItemDialog
                 isOpen={isDialogOpen}

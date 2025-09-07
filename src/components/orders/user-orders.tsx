@@ -10,14 +10,20 @@ import { Skeleton } from '../ui/skeleton';
 import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Terminal } from 'lucide-react';
 
 export function UserOrders({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+        setLoading(false);
+        return;
+    };
 
     const q = query(
       collection(db, "orders"),
@@ -32,8 +38,10 @@ export function UserOrders({ userId }: { userId: string }) {
       });
       setOrders(userOrders);
       setLoading(false);
-    }, (error) => {
-        console.error("Error fetching user orders: ", error);
+      setError(null);
+    }, (err) => {
+        console.error("Error fetching user orders: ", err);
+        setError("Could not fetch your orders. Please contact support if the problem persists.");
         toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch your orders.' });
         setLoading(false);
     });
@@ -56,6 +64,16 @@ export function UserOrders({ userId }: { userId: string }) {
         </CardContent>
       </Card>
     )
+  }
+
+  if (error) {
+     return (
+      <Alert variant="destructive">
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>Error Fetching Orders</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
   }
 
   if (orders.length === 0) {
@@ -90,7 +108,7 @@ export function UserOrders({ userId }: { userId: string }) {
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">₹{order.total}</TableCell>
                 <TableCell className="hidden sm:table-cell text-center"><OrderStatusBadge status={order.status} /></TableCell>
-                <TableCell className="text-right">{format(order.createdAt.toDate(), 'PPp')}</TableCell>
+                <TableCell className="text-right">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</TableCell>
               </TableRow>
             ))}
           </TableBody>
