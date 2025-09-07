@@ -30,7 +30,7 @@ export function ApproveOrderDialog({ isOpen, setIsOpen, order, onConfirm }: Appr
         <DialogHeader>
           <DialogTitle>Approve Order</DialogTitle>
           <DialogDescription>
-            Estimate when the order will be ready for pickup.
+            Estimate when the order will be ready for pickup. This will notify the user.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

@@ -37,24 +37,29 @@ export function CartSheet() {
     }
     setIsPlacingOrder(true);
     try {
-      await placeOrder({
+      const result = await placeOrder({
         userId: user.uid,
         userEmail: user.email!,
         items: cart,
         total: cartTotal,
       });
-      toast({
-        title: "Order Placed!",
-        description: "Your order has been successfully placed.",
-      });
-      clearCart();
-      setCartOpen(false);
-      router.push('/orders');
-    } catch (error) {
+
+      if (result.success) {
+        toast({
+          title: "Order Placed!",
+          description: "Your order has been successfully placed.",
+        });
+        clearCart();
+        setCartOpen(false);
+        router.push('/orders');
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Order Failed",
-        description: "There was a problem placing your order.",
+        description: error.message || "There was a problem placing your order.",
       });
     } finally {
       setIsPlacingOrder(false);

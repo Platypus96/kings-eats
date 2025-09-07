@@ -45,8 +45,18 @@ export function OrderManagement() {
         return () => unsubscribe();
     }, [toast]);
 
-    const handleStatusUpdate = async (orderId: string, status: OrderStatus, completionTime: Date | null = null) => {
-        const result = await updateOrderStatus(orderId, status, completionTime);
+    const handleStatusUpdate = async (order: Order, status: OrderStatus, completionTime: Date | null = null) => {
+        
+        let message = '';
+        if (status === 'Approved' && completionTime) {
+            message = `Your order has been approved and will be ready around ${format(completionTime, 'p')}.`;
+        } else if (status === 'Declined') {
+            message = `Your order has been declined. Please contact the canteen for more information.`;
+        } else if (status === 'Completed') {
+            message = `Your order is now marked as completed. Thank you!`;
+        }
+
+        const result = await updateOrderStatus(order.id, status, completionTime, order.userId, message);
         if (!result.success) {
             toast({ variant: 'destructive', title: 'Update Failed', description: result.message });
         } else {
@@ -125,8 +135,8 @@ export function OrderManagement() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onClick={() => openApproveDialog(order)}>Approve</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Declined')}>Decline</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Completed')}>Mark as Completed</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Declined')}>Decline</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Completed')}>Mark as Completed</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
@@ -142,7 +152,7 @@ export function OrderManagement() {
                 isOpen={isApproveDialogOpen}
                 setIsOpen={setIsApproveDialogOpen}
                 order={selectedOrder}
-                onConfirm={handleStatusUpdate}
+                onConfirm={(orderId, status, completionTime) => handleStatusUpdate(selectedOrder, status, completionTime)}
             />
         )}
       </>

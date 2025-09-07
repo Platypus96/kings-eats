@@ -20,6 +20,15 @@ export interface CartItem extends MenuItem {
 
 export type OrderStatus = 'Pending' | 'Approved' | 'Declined' | 'Completed';
 
+export interface Notification {
+  id: string;
+  orderId: string;
+  message: string;
+  read: boolean;
+  createdAt: any; // Firestore timestamp
+}
+
+
 export interface Order {
   id: string;
   userId: string;

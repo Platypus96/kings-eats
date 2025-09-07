@@ -13,20 +13,20 @@ interface PlaceOrderPayload {
 
 export async function placeOrder(payload: PlaceOrderPayload) {
   try {
-    await addDoc(collection(db, "orders"), {
+    const orderDocRef = await addDoc(collection(db, "orders"), {
       ...payload,
       status: "Pending" as OrderStatus,
       createdAt: serverTimestamp(),
       completionTime: null,
     });
-    return { success: true, message: "Order placed successfully." };
+    return { success: true, message: "Order placed successfully.", orderId: orderDocRef.id };
   } catch (error) {
     console.error("Error placing order:", error);
     return { success: false, message: "Failed to place order." };
   }
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus, completionTime: Date | null = null) {
+export async function updateOrderStatus(orderId: string, status: OrderStatus, completionTime: Date | null = null, userId: string, message: string) {
   try {
     const orderRef = doc(db, "orders", orderId);
     const dataToUpdate: { status: OrderStatus; completionTime?: Date | null } = { status };
@@ -34,12 +34,36 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus, co
         dataToUpdate.completionTime = completionTime;
     }
     await updateDoc(orderRef, dataToUpdate);
+    
+    // Create a notification for the user
+    if (userId && message) {
+        const userNotificationsRef = collection(db, `users/${userId}/notifications`);
+        await addDoc(userNotificationsRef, {
+            orderId: orderId,
+            message: message,
+            read: false,
+            createdAt: serverTimestamp(),
+        });
+    }
+
     return { success: true, message: `Order status updated to ${status}.` };
   } catch (error) {
     console.error("Error updating order status:", error);
     return { success: false, message: "Failed to update order status." };
   }
 }
+
+export async function markNotificationAsRead(userId: string, notificationId: string) {
+    try {
+        const notificationRef = doc(db, `users/${userId}/notifications`, notificationId);
+        await updateDoc(notificationRef, { read: true });
+        return { success: true };
+    } catch (error) {
+        console.error("Error marking notification as read:", error);
+        return { success: false };
+    }
+}
+
 
 export async function updateMenuItem(itemId: string, data: Partial<MenuItem>) {
     try {

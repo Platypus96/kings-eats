@@ -3,10 +3,11 @@
 import type { ReactNode } from "react";
 import React, { createContext, useState } from "react";
 import type { MenuItem, CartItem } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: MenuItem) => void;
+  addToCart: (item: MenuItem, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
@@ -21,18 +22,26 @@ export const CartContext = createContext<CartContextType | undefined>(undefined)
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setCartOpen] = useState(false);
+  const { toast } = useToast();
 
-  const addToCart = (item: MenuItem) => {
-    setCartOpen(true);
+  const addToCart = (item: MenuItem, quantity: number) => {
+    if (quantity <= 0) return;
+    
     setCart((prevCart) => {
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + quantity } : cartItem
         );
       }
-      return [...prevCart, { ...item, quantity: 1 }];
+      return [...prevCart, { ...item, quantity: quantity }];
     });
+
+    toast({
+        title: "Added to cart",
+        description: `${quantity} x ${item.name} added to your cart.`,
+    })
+    setCartOpen(true);
   };
 
   const removeFromCart = (itemId: string) => {

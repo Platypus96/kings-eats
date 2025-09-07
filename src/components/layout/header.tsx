@@ -7,6 +7,7 @@ import { UserNav } from "@/components/auth/user-nav";
 import { Button } from "@/components/ui/button";
 import { CartIcon } from "@/components/cart/cart-icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Notifications } from "../notifications/notifications";
 
 export function Header() {
   const { user, loading } = useAuth();
@@ -51,6 +52,7 @@ export function Header() {
             <Skeleton className="h-8 w-20" />
           ) : user ? (
             <>
+              {!user.isAdmin && <Notifications />}
               <CartIcon />
               <UserNav />
             </>

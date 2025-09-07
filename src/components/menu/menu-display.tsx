@@ -1,25 +1,30 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MenuCard } from "./menu-card";
 import type { MenuItem } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { MenuListItem } from './menu-list-item';
+import { Badge } from '../ui/badge';
 
 function MenuSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
-          <Skeleton className="h-[200px] w-full" />
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-6 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-10 w-full" />
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
           </div>
         </div>
       ))}
@@ -27,15 +32,15 @@ function MenuSkeleton() {
   )
 }
 
-
 export function MenuDisplay() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const q = query(collection(db, "menu"));
+    const q = query(collection(db, "menu"), orderBy("name"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const items: MenuItem[] = [];
         querySnapshot.forEach((doc) => {
@@ -53,7 +58,7 @@ export function MenuDisplay() {
 
     return () => unsubscribe();
   }, [toast]);
-
+  
   const availableItems = menuItems.filter(item => item.available);
   const unavailableItems = menuItems.filter(item => !item.available);
 
@@ -86,22 +91,23 @@ export function MenuDisplay() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {availableItems.map((item) => (
-          <MenuCard key={item.id} item={item} />
-        ))}
-      </div>
-      {unavailableItems.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-muted-foreground mb-4">Unavailable Today</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {unavailableItems.map((item) => (
-              <MenuCard key={item.id} item={item} />
+    <Card>
+      <CardContent className="p-0">
+        <div className="divide-y">
+            {availableItems.map((item) => (
+              <MenuListItem key={item.id} item={item} disabled={!user} />
             ))}
-          </div>
+            {unavailableItems.map((item) => (
+               <div key={item.id} className="p-4 flex justify-between items-center opacity-50">
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  <p className="text-sm text-muted-foreground">₹{item.price}</p>
+                </div>
+                <Badge variant="outline">Unavailable</Badge>
+              </div>
+            ))}
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
