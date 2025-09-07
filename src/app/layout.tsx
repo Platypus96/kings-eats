@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Header } from '@/components/layout/header';
 import { cn } from '@/lib/utils';
 import { CartSheet } from '@/components/cart/cart-sheet';
+import { Footer } from '@/components/layout/footer';
 
 export const metadata: Metadata = {
   title: 'Kings Eats',
@@ -28,6 +29,7 @@ export default function RootLayout({
           <div className="relative flex min-h-dvh flex-col">
             <Header />
             <main className="flex-1">{children}</main>
+            <Footer />
             <CartSheet />
           </div>
           <Toaster />
