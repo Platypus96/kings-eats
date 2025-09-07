@@ -19,7 +19,7 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading } = useAuth();
+  const { user, signInWithGoogle, loading, isInitialized } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function LoginPage() {
     }
   }, [user, router]);
   
-  if (loading || user) {
+  if (loading || user || !isInitialized) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
@@ -47,7 +47,7 @@ export default function LoginPage() {
           <CardDescription>Sign in to place your order</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={signInWithGoogle}>
+          <Button className="w-full" onClick={signInWithGoogle} disabled={!isInitialized}>
             <GoogleIcon />
             Sign in with Google
           </Button>

@@ -12,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  isInitialized: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,9 +20,13 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    // This effect runs only on the client side
+    setIsInitialized(true);
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const email = firebaseUser.email || "";
@@ -49,6 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [toast]);
 
   const signInWithGoogle = async () => {
+    if (!isInitialized) return;
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
@@ -58,6 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description = "Sign-in popup was closed before completing. Please try again.";
       } else if (error.code === 'auth/cancelled-popup-request') {
         description = "Multiple sign-in attempts detected. Please try again.";
+      } else if (error.code === 'auth/internal-error') {
+         description = "An internal authentication error occurred. Please check your Firebase project setup and authorized domains."
       }
       toast({
         variant: "destructive",
@@ -68,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    if (!isInitialized) return;
     try {
       await firebaseSignOut(auth);
     } catch (error) {
@@ -80,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, signOut };
+  const value = { user, loading, signInWithGoogle, signOut, isInitialized };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
