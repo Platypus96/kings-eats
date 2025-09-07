@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import type { MenuItem } from "@/lib/types";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -16,9 +15,7 @@ import { addMenuItem, updateMenuItem } from "@/app/actions";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  description: z.string().min(10, { message: "Description must be at least 10 characters." }),
   price: z.coerce.number().min(0, { message: "Price cannot be negative." }),
-  imageUrl: z.string().url({ message: "Please enter a valid URL." }),
   available: z.boolean(),
 });
 
@@ -35,31 +32,37 @@ export function EditMenuItemDialog({ isOpen, setIsOpen, item, onFinished }: Edit
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      description: "",
       price: 0,
-      imageUrl: "https://picsum.photos/400/300",
       available: true,
     },
   });
 
   useEffect(() => {
     if (item) {
-      form.reset(item);
+      form.reset({
+          name: item.name,
+          price: item.price,
+          available: item.available
+      });
     } else {
       form.reset({
         name: "",
-        description: "",
         price: 0,
-        imageUrl: "https://picsum.photos/400/300",
         available: true,
       });
     }
   }, [item, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const dataToSave = {
+        ...values,
+        description: item?.description || "",
+        imageUrl: item?.imageUrl || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`,
+    }
+
     const result = item
-      ? await updateMenuItem(item.id, values)
-      : await addMenuItem(values);
+      ? await updateMenuItem(item.id, dataToSave)
+      : await addMenuItem(dataToSave);
 
     if (result.success) {
       toast({ title: "Success", description: result.message });
@@ -82,14 +85,8 @@ export function EditMenuItemDialog({ isOpen, setIsOpen, item, onFinished }: Edit
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-            <FormField control={form.control} name="description" render={({ field }) => (
-              <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
             <FormField control={form.control} name="price" render={({ field }) => (
               <FormItem><FormLabel>Price</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="imageUrl" render={({ field }) => (
-              <FormItem><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="available" render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">

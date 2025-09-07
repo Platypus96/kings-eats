@@ -11,7 +11,7 @@ import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestor
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, CheckCircle2 } from 'lucide-react';
 
 export function UserOrders({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -105,6 +105,12 @@ export function UserOrders({ userId }: { userId: string }) {
                 <TableCell>
                   <div className="font-medium">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</div>
                   <div className="text-sm text-muted-foreground md:hidden">Total: ₹{order.total}</div>
+                  {order.status === 'Approved' && order.completionTime && (
+                     <div className="flex items-center text-sm text-green-500 mt-2">
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        <span>Ready around {format(order.completionTime.toDate(), 'p')}</span>
+                     </div>
+                  )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">₹{order.total}</TableCell>
                 <TableCell className="hidden sm:table-cell text-center"><OrderStatusBadge status={order.status} /></TableCell>

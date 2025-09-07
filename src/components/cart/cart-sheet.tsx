@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
-import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Trash2, ShoppingCart } from "lucide-react";
@@ -74,14 +73,6 @@ export function CartSheet() {
               <div className="px-6 space-y-4">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      width={64}
-                      height={64}
-                      className="rounded-md object-cover"
-                      data-ai-hint={item['data-ai-hint']}
-                    />
                     <div className="flex-1">
                       <p className="font-medium">{item.name}</p>
                       <p className="text-sm text-muted-foreground">

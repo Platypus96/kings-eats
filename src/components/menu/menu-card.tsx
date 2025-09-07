@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCart } from "@/hooks/use-cart";
 import type { MenuItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -23,22 +22,14 @@ export function MenuCard({ item }: MenuCardProps) {
       "flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/50",
       !item.available && "opacity-50"
     )}>
-      <CardHeader className="p-0 relative">
-        <Image
-          src={item.imageUrl}
-          alt={item.name}
-          width={400}
-          height={300}
-          className="object-cover w-full h-48"
-          data-ai-hint={item['data-ai-hint']}
-        />
+       <CardHeader className="flex flex-row justify-between items-start pb-2">
+        <CardTitle className="text-lg">{item.name}</CardTitle>
         {!item.available && (
-          <Badge variant="destructive" className="absolute top-2 right-2">UNAVAILABLE</Badge>
+          <Badge variant="destructive" className="ml-auto">UNAVAILABLE</Badge>
         )}
       </CardHeader>
-      <CardContent className="p-4 flex-1">
-        <CardTitle className="text-lg">{item.name}</CardTitle>
-        <CardDescription className="mt-1 text-sm h-10">{item.description}</CardDescription>
+      <CardContent className="p-4 pt-0 flex-1">
+        {/* Description removed */}
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <p className="text-xl font-bold text-primary">₹{item.price}</p>

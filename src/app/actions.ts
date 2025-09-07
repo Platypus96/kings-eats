@@ -17,6 +17,7 @@ export async function placeOrder(payload: PlaceOrderPayload) {
       ...payload,
       status: "Pending" as OrderStatus,
       createdAt: serverTimestamp(),
+      completionTime: null,
     });
     return { success: true, message: "Order placed successfully." };
   } catch (error) {
@@ -25,10 +26,14 @@ export async function placeOrder(payload: PlaceOrderPayload) {
   }
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus) {
+export async function updateOrderStatus(orderId: string, status: OrderStatus, completionTime: Date | null = null) {
   try {
     const orderRef = doc(db, "orders", orderId);
-    await updateDoc(orderRef, { status });
+    const dataToUpdate: { status: OrderStatus; completionTime?: Date | null } = { status };
+    if (status === 'Approved') {
+        dataToUpdate.completionTime = completionTime;
+    }
+    await updateDoc(orderRef, dataToUpdate);
     return { success: true, message: `Order status updated to ${status}.` };
   } catch (error) {
     console.error("Error updating order status:", error);

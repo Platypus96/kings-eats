@@ -15,11 +15,14 @@ import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+import { ApproveOrderDialog } from './approve-order-dialog';
 
 export function OrderManagement() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -42,14 +45,20 @@ export function OrderManagement() {
         return () => unsubscribe();
     }, [toast]);
 
-    const handleStatusUpdate = async (orderId: string, status: OrderStatus) => {
-        const result = await updateOrderStatus(orderId, status);
+    const handleStatusUpdate = async (orderId: string, status: OrderStatus, completionTime: Date | null = null) => {
+        const result = await updateOrderStatus(orderId, status, completionTime);
         if (!result.success) {
             toast({ variant: 'destructive', title: 'Update Failed', description: result.message });
         } else {
             toast({ title: 'Success', description: `Order status updated.` });
         }
+        setIsApproveDialogOpen(false);
     };
+
+    const openApproveDialog = (order: Order) => {
+        setSelectedOrder(order);
+        setIsApproveDialogOpen(true);
+    }
     
     if (loading) {
         return <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><div className="space-y-2"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div></CardContent></Card>;
@@ -74,6 +83,7 @@ export function OrderManagement() {
     }
 
     return (
+        <>
         <Card>
             <CardHeader>
                 <CardTitle>All Orders</CardTitle>
@@ -114,7 +124,7 @@ export function OrderManagement() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Approved')}>Approve</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => openApproveDialog(order)}>Approve</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Declined')}>Decline</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleStatusUpdate(order.id, 'Completed')}>Mark as Completed</DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -127,5 +137,14 @@ export function OrderManagement() {
                 )}
             </CardContent>
         </Card>
+        {selectedOrder && (
+            <ApproveOrderDialog 
+                isOpen={isApproveDialogOpen}
+                setIsOpen={setIsApproveDialogOpen}
+                order={selectedOrder}
+                onConfirm={handleStatusUpdate}
+            />
+        )}
+      </>
     );
 }

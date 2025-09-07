@@ -28,4 +28,5 @@ export interface Order {
   total: number;
   status: OrderStatus;
   createdAt: any; // Firestore timestamp
+  completionTime?: any; // Firestore timestamp
 }
