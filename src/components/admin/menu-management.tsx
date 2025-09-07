@@ -6,23 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, Trash2 } from 'lucide-react';
-import { deleteMenuItem } from '@/app/actions';
+import { PlusCircle, Trash2 } from 'lucide-react';
+import { addMenuItem, deleteMenuItem, updateMenuItem } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { EditMenuItemDialog } from './edit-menu-item-dialog';
 import { Badge } from '../ui/badge';
 import Image from 'next/image';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
-
-const mockMenuItems: MenuItem[] = [
-  { id: '1', name: 'Veg Thali', price: 80, description: 'A complete meal.', imageUrl: 'https://picsum.photos/400/300?id=1', available: true, 'data-ai-hint': "veg thali" },
-  { id: '2', name: 'Chicken Biryani', price: 120, description: 'Aromatic rice.', imageUrl: 'https://picsum.photos/400/300?id=2', available: true, 'data-ai-hint': "chicken biryani" },
-  { id: '5', name: 'Masala Dosa', price: 60, description: 'Crispy pancake.', imageUrl: 'https://picsum.photos/400/300?id=5', available: false, 'data-ai-hint': "masala dosa" },
-];
-
-async function getMenuItems(): Promise<MenuItem[]> {
-    return new Promise(resolve => setTimeout(() => resolve(mockMenuItems), 1000));
-}
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export function MenuManagement() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -31,16 +23,28 @@ export function MenuManagement() {
     const [currentItem, setCurrentItem] = useState<MenuItem | null>(null);
     const { toast } = useToast();
 
-    const fetchMenu = async () => {
-        setLoading(true);
-        const items = await getMenuItems();
-        setMenuItems(items);
-        setLoading(false);
-    };
-
     useEffect(() => {
-        fetchMenu();
-    }, []);
+        const q = query(collection(db, "menu"), orderBy("name"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const items: MenuItem[] = [];
+            querySnapshot.forEach((doc) => {
+                items.push({ id: doc.id, ...doc.data() } as MenuItem);
+            });
+            setMenuItems(items);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching menu items: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch menu items.' });
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [toast]);
+    
+    const fetchMenu = async () => {
+        // This function is called by the dialog on success.
+        // The onSnapshot listener will automatically update the UI.
+    };
 
     const handleEdit = (item: MenuItem) => {
         setCurrentItem(item);
@@ -53,14 +57,11 @@ export function MenuManagement() {
     };
 
     const handleDelete = async (itemId: string) => {
-        const originalItems = [...menuItems];
-        setMenuItems(prev => prev.filter(item => item.id !== itemId));
         const result = await deleteMenuItem(itemId);
-        if (!result.success) {
-            toast({ variant: 'destructive', title: 'Delete Failed', description: result.message });
-            setMenuItems(originalItems);
-        } else {
+        if (result.success) {
             toast({ title: 'Success', description: 'Menu item deleted.' });
+        } else {
+            toast({ variant: 'destructive', title: 'Delete Failed', description: result.message });
         }
     };
     

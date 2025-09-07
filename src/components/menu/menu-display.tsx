@@ -5,42 +5,32 @@ import { MenuCard } from "./menu-card";
 import type { MenuItem } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
-
-// Mock data simulation - in a real app, this would be a Firestore call
-const mockMenuItems: MenuItem[] = [
-  { id: '1', name: 'Veg Thali', price: 80, description: 'A complete meal with rice, roti, dal, and sabzi.', imageUrl: 'https://picsum.photos/400/300?id=1', available: true, 'data-ai-hint': "veg thali" },
-  { id: '2', name: 'Chicken Biryani', price: 120, description: 'Flavorful and aromatic long-grain rice with chicken.', imageUrl: 'https://picsum.photos/400/300?id=2', available: true, 'data-ai-hint': "chicken biryani" },
-  { id: '3', name: 'Paneer Butter Masala', price: 100, description: 'Creamy and rich paneer dish.', imageUrl: 'https://picsum.photos/400/300?id=3', available: true, 'data-ai-hint': "paneer masala" },
-  { id: '4', name: 'Chole Bhature', price: 70, description: 'Spicy chickpeas with fluffy fried bread.', imageUrl: 'https://picsum.photos/400/300?id=4', available: true, 'data-ai-hint': "chole bhature" },
-  { id: '5', name: 'Masala Dosa', price: 60, description: 'Crispy rice pancake with potato filling.', imageUrl: 'https://picsum.photos/400/300?id=5', available: false, 'data-ai-hint': "masala dosa" },
-  { id: '6', name: 'Samosa (2 pcs)', price: 30, description: 'Fried pastry with a savory filling.', imageUrl: 'https://picsum.photos/400/300?id=6', available: true, 'data-ai-hint': "samosa" },
-  { id: '7', name: 'Special Non-Veg Thali', price: 150, description: 'A king-sized meal for the hungry.', imageUrl: 'https://picsum.photos/400/300?id=7', available: true, 'data-ai-hint': "nonveg thali" },
-  { id: '8', name: 'Cold Drink', price: 20, description: 'Chilled soft drink to quench your thirst.', imageUrl: 'https://picsum.photos/400/300?id=8', available: true, 'data-ai-hint': "cold drink" },
-];
-
-
-async function getMenuItems(): Promise<MenuItem[]> {
-  // In a real app, you would fetch from Firestore here using onSnapshot for real-time updates.
-  // For now, we simulate a network delay and return mock data.
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(mockMenuItems);
-    }, 1000);
-  });
-}
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export function MenuDisplay() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchMenu = async () => {
-      const items = await getMenuItems();
-      setMenuItems(items);
-      setLoading(false);
-    };
-    fetchMenu();
-  }, []);
+    const q = query(collection(db, "menu"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const items: MenuItem[] = [];
+        querySnapshot.forEach((doc) => {
+            items.push({ id: doc.id, ...doc.data() } as MenuItem);
+        });
+        setMenuItems(items);
+        setLoading(false);
+    }, (error) => {
+        console.error("Error fetching menu items: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch menu items.' });
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [toast]);
 
   const availableItems = menuItems.filter(item => item.available);
   const unavailableItems = menuItems.filter(item => !item.available);

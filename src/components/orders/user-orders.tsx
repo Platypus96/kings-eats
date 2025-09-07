@@ -7,34 +7,39 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { OrderStatusBadge } from '@/components/shared/order-status-badge';
 import { format } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
-
-// Mock data simulation
-const mockOrders: Order[] = [
-  { id: '1', userId: 'test-user-id', userEmail: 'test@iiita.ac.in', items: [{ id: '1', name: 'Veg Thali', price: 80, quantity: 2, imageUrl: '', description: '', available: true }], total: 160, status: 'Completed', createdAt: { toDate: () => new Date('2023-10-27T10:00:00Z') } },
-  { id: '2', userId: 'test-user-id', userEmail: 'test@iiita.ac.in', items: [{ id: '2', name: 'Chicken Biryani', price: 120, quantity: 1, imageUrl: '', description: '', available: true }], total: 120, status: 'Approved', createdAt: { toDate: () => new Date('2023-10-28T11:30:00Z') } },
-  { id: '3', userId: 'test-user-id', userEmail: 'test@iiita.ac.in', items: [{ id: '4', name: 'Chole Bhature', price: 70, quantity: 1, imageUrl: '', description: '', available: true }, { id: '8', name: 'Cold Drink', price: 20, quantity: 1, imageUrl: '', description: '', available: true }], total: 90, status: 'Pending', createdAt: { toDate: () => new Date('2023-10-28T12:00:00Z') } },
-  { id: '4', userId: 'test-user-id', userEmail: 'test@iiita.ac.in', items: [{ id: '3', name: 'Paneer Butter Masala', price: 100, quantity: 1, imageUrl: '', description: '', available: true }], total: 100, status: 'Declined', createdAt: { toDate: () => new Date('2023-10-26T19:00:00Z') } },
-];
-
-async function getUserOrders(userId: string): Promise<Order[]> {
-  // In a real app, you would fetch from Firestore where userId matches, and listen for snapshots.
-  console.log(`Fetching orders for user: ${userId}`);
-  return new Promise(resolve => setTimeout(() => resolve(mockOrders), 1000));
-}
-
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserOrders({ userId }: { userId: string }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      const userOrders = await getUserOrders(userId);
-      setOrders(userOrders.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
+    if (!userId) return;
+
+    const q = query(
+      collection(db, "orders"),
+      where("userId", "==", userId),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const userOrders: Order[] = [];
+      querySnapshot.forEach((doc) => {
+        userOrders.push({ id: doc.id, ...doc.data() } as Order);
+      });
+      setOrders(userOrders);
       setLoading(false);
-    };
-    fetchOrders();
-  }, [userId]);
+    }, (error) => {
+        console.error("Error fetching user orders: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch your orders.' });
+        setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [userId, toast]);
 
   if (loading) {
     return (

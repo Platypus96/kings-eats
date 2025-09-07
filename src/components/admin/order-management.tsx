@@ -12,19 +12,8 @@ import { Button } from '@/components/ui/button';
 import { MoreHorizontal } from 'lucide-react';
 import { updateOrderStatus } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-
-// Mock data simulation for all orders
-const mockAllOrders: Order[] = [
-  { id: '3', userId: 'user1', userEmail: 'iit2022001@iiita.ac.in', items: [{ id: '4', name: 'Chole Bhature', price: 70, quantity: 1, imageUrl: '', description: '', available: true }], total: 70, status: 'Pending', createdAt: { toDate: () => new Date('2023-10-28T12:00:00Z') } },
-  { id: '2', userId: 'user2', userEmail: 'iit2022002@iiita.ac.in', items: [{ id: '2', name: 'Chicken Biryani', price: 120, quantity: 1, imageUrl: '', description: '', available: true }], total: 120, status: 'Approved', createdAt: { toDate: () => new Date('2023-10-28T11:30:00Z') } },
-  { id: '1', userId: 'user3', userEmail: 'iit2022003@iiita.ac.in', items: [{ id: '1', name: 'Veg Thali', price: 80, quantity: 2, imageUrl: '', description: '', available: true }], total: 160, status: 'Completed', createdAt: { toDate: () => new Date('2023-10-27T10:00:00Z') } },
-  { id: '4', userId: 'user4', userEmail: 'iit2022004@iiita.ac.in', items: [{ id: '3', name: 'Paneer Butter Masala', price: 100, quantity: 1, imageUrl: '', description: '', available: true }], total: 100, status: 'Declined', createdAt: { toDate: () => new Date('2023-10-26T19:00:00Z') } },
-];
-
-async function getAllOrders(): Promise<Order[]> {
-    // In a real app, you would fetch all orders from Firestore and listen for snapshots.
-    return new Promise(resolve => setTimeout(() => resolve(mockAllOrders), 1000));
-}
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export function OrderManagement() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -32,25 +21,29 @@ export function OrderManagement() {
     const { toast } = useToast();
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            const allOrders = await getAllOrders();
-            setOrders(allOrders.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
+        const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const allOrders: Order[] = [];
+            querySnapshot.forEach((doc) => {
+                allOrders.push({ id: doc.id, ...doc.data() } as Order);
+            });
+            setOrders(allOrders);
             setLoading(false);
-        };
-        fetchOrders();
-    }, []);
+        }, (error) => {
+            console.error("Error fetching orders: ", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch orders.' });
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [toast]);
 
     const handleStatusUpdate = async (orderId: string, status: OrderStatus) => {
-        const originalOrders = [...orders];
-        // Optimistically update UI
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-
         const result = await updateOrderStatus(orderId, status);
         if (!result.success) {
             toast({ variant: 'destructive', title: 'Update Failed', description: result.message });
-            setOrders(originalOrders); // Revert on failure
         } else {
-            toast({ title: 'Success', description: `Order ${orderId} has been ${status.toLowerCase()}.` });
+            toast({ title: 'Success', description: `Order status updated.` });
         }
     };
     
