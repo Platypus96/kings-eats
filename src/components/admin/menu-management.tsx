@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trash2, Terminal } from 'lucide-react';
+import { PlusCircle, Trash2, Terminal, Search } from 'lucide-react';
 import { deleteMenuItem } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { EditMenuItemDialog } from './edit-menu-item-dialog';
@@ -15,6 +15,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+import { Input } from '../ui/input';
+
+const ITEMS_PER_PAGE = 5;
 
 export function MenuManagement() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -22,6 +25,8 @@ export function MenuManagement() {
     const [error, setError] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<MenuItem | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -68,6 +73,28 @@ export function MenuManagement() {
         }
     };
     
+    const filteredItems = menuItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+    const paginatedItems = filteredItems.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const handlePrevPage = () => {
+        setCurrentPage(prev => Math.max(prev - 1, 1));
+    }
+
+    const handleNextPage = () => {
+        setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    }
+
     if (loading) {
         return <Card><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><div className="space-y-2"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div></CardContent></Card>;
     }
@@ -92,20 +119,37 @@ export function MenuManagement() {
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Menu Items</CardTitle>
-                    <CardDescription>Add, edit, or remove items from the menu.</CardDescription>
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <CardTitle>Menu Items</CardTitle>
+                        <CardDescription>Add, edit, or remove items from the menu.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                         <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <Input
+                                placeholder="Search menu..."
+                                className="pl-10"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <Button onClick={handleAdd} size="sm" className="shrink-0">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Item
+                        </Button>
+                    </div>
                 </div>
-                <Button onClick={handleAdd} size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Item
-                </Button>
             </CardHeader>
             <CardContent>
                  {menuItems.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-muted-foreground">No menu items found. Click "Add Item" to get started.</p>
+                    </div>
+                ) : paginatedItems.length === 0 ? (
+                    <div className="text-center py-12">
+                        <p className="text-muted-foreground">No items match your search.</p>
                     </div>
                 ) : (
                 <Table>
@@ -118,7 +162,7 @@ export function MenuManagement() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {menuItems.map((item) => (
+                        {paginatedItems.map((item) => (
                             <TableRow key={item.id}>
                                 <TableCell>
                                     <span className="font-medium">{item.name}</span>
@@ -155,6 +199,19 @@ export function MenuManagement() {
                 </Table>
                 )}
             </CardContent>
+             {totalPages > 1 && (
+                <div className="flex justify-center items-center p-4 gap-4 border-t">
+                <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
+                    Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline">
+                    Next
+                </Button>
+                </div>
+            )}
             <EditMenuItemDialog
                 isOpen={isDialogOpen}
                 setIsOpen={setIsDialogOpen}

@@ -29,13 +29,13 @@ export function MenuListItem({ item, disabled }: MenuListItemProps) {
 
   return (
     <div className="p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div className='flex-1'>
+      <div className='flex-1 self-start sm:self-center'>
         <p className="font-medium">{item.name}</p>
         <p className="text-sm text-primary font-semibold">₹{item.price}</p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full sm:w-auto">
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => handleQuantityChange(-1)} disabled={disabled || quantity <= 1}>
+          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => handleQuantityChange(-1)} disabled={disabled || quantity <= 1}>
             <Minus className="h-4 w-4" />
           </Button>
           <Input
@@ -46,11 +46,11 @@ export function MenuListItem({ item, disabled }: MenuListItemProps) {
             className="h-9 w-16 text-center"
             disabled={disabled}
           />
-          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => handleQuantityChange(1)} disabled={disabled}>
+          <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => handleQuantityChange(1)} disabled={disabled}>
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <Button onClick={handleAddToCart} disabled={disabled} className="w-full sm:w-auto">
+        <Button onClick={handleAddToCart} disabled={disabled} className="flex-grow sm:flex-grow-0">
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add
         </Button>
