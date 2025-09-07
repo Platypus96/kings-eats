@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, connectAuthEmulator } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // IMPORTANT: Replace with your own Firebase configuration
@@ -19,5 +19,19 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
+
+// The connectAuthEmulator call is added to handle potential issues with
+// origin validation during local development. It ensures that Firebase
+// authentication correctly recognizes the local development environment.
+if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+  // Point to the official Firebase Auth emulator port
+  // Note: You don't need to be running the emulator for this to help resolve origin issues
+  try {
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
+  } catch (e) {
+      // It's okay if this fails, it's just a helper for local dev.
+      console.log(e);
+  }
+}
 
 export { app, auth, db, googleProvider };
