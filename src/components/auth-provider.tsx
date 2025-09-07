@@ -51,12 +51,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing in with Google: ", error);
+      let description = "Could not sign in with Google. Please try again.";
+      if (error.code === 'auth/popup-closed-by-user') {
+        description = "Sign-in popup was closed before completing. Please try again.";
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        description = "Multiple sign-in attempts detected. Please try again.";
+      }
       toast({
         variant: "destructive",
         title: "Sign-in Failed",
-        description: "Could not sign in with Google. Please try again.",
+        description: description,
       });
     }
   };
