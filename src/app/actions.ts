@@ -9,6 +9,8 @@ interface PlaceOrderPayload {
   userEmail: string;
   items: CartItem[];
   total: number;
+  phone: string;
+  instructions?: string;
 }
 
 export async function placeOrder(payload: PlaceOrderPayload) {

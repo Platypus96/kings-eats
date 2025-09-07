@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Terminal } from 'lucide-react';
+import { MoreHorizontal, Terminal, Mail, Phone, Info } from 'lucide-react';
 import { updateOrderStatus } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
@@ -119,8 +119,15 @@ export function OrderManagement() {
                         {orders.map((order) => (
                             <TableRow key={order.id}>
                                 <TableCell>
-                                    <div className="font-medium">{order.userEmail}</div>
-                                    <div className="text-xs text-muted-foreground">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</div>
+                                    <div className="font-medium flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /> {order.userEmail}</div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1"><Phone className="h-3 w-3" /> {order.phone}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</div>
+                                    {order.instructions && (
+                                        <div className="text-xs text-blue-400 mt-2 p-2 bg-blue-500/10 rounded-md flex items-start gap-2">
+                                            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                                            <span>{order.instructions}</span>
+                                        </div>
+                                    )}
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</TableCell>
                                 <TableCell className="hidden sm:table-cell text-center">₹{order.total}</TableCell>
@@ -134,9 +141,9 @@ export function OrderManagement() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => openApproveDialog(order)}>Approve</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Declined')}>Decline</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Completed')}>Mark as Completed</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => openApproveDialog(order)} disabled={order.status !== 'Pending'}>Approve</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Declined')} disabled={order.status !== 'Pending'}>Decline</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Completed')} disabled={order.status === 'Completed' || order.status === 'Declined'}>Mark as Completed</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

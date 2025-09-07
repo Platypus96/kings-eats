@@ -30,9 +30,11 @@ export interface Notification {
 
 
 export interface Order {
-  id: string;
+  id:string;
   userId: string;
   userEmail: string;
+  phone: string;
+  instructions?: string;
   items: CartItem[];
   total: number;
   status: OrderStatus;

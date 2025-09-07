@@ -13,6 +13,8 @@ import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Trash2, ShoppingCart } from "lucide-react";
 import { placeOrder } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +26,8 @@ export function CartSheet() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [instructions, setInstructions] = useState("");
   const router = useRouter();
 
   const handlePlaceOrder = async () => {
@@ -35,6 +39,15 @@ export function CartSheet() {
       });
       return;
     }
+    if (!phone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Phone Number Required",
+        description: "Please enter your phone number.",
+      });
+      return;
+    }
+
     setIsPlacingOrder(true);
     try {
       const result = await placeOrder({
@@ -42,6 +55,8 @@ export function CartSheet() {
         userEmail: user.email!,
         items: cart,
         total: cartTotal,
+        phone,
+        instructions,
       });
 
       if (result.success) {
@@ -50,6 +65,8 @@ export function CartSheet() {
           description: "Your order has been successfully placed.",
         });
         clearCart();
+        setPhone("");
+        setInstructions("");
         setCartOpen(false);
         router.push('/orders');
       } else {
@@ -101,6 +118,16 @@ export function CartSheet() {
                 ))}
               </div>
             </ScrollArea>
+            <div className="px-6 space-y-4 border-t pt-4">
+              <div>
+                <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" required />
+              </div>
+              <div>
+                <Label htmlFor="instructions">Special Instructions</Label>
+                <Textarea id="instructions" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Any special requests for your order?" />
+              </div>
+            </div>
             <SheetFooter className="px-6 py-4 mt-auto bg-secondary/50">
               <div className="w-full space-y-4">
                  <div className="flex justify-between text-lg font-semibold">
