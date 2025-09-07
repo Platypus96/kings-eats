@@ -13,6 +13,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   isInitialized: boolean;
+  isSigningIn: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,13 +50,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
       }
       setLoading(false);
+      setIsSigningIn(false);
     });
 
     return () => unsubscribe();
   }, [toast]);
 
   const signInWithGoogle = async () => {
-    if (!isInitialized) return;
+    if (!isInitialized || isSigningIn) return;
+    setIsSigningIn(true);
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
@@ -72,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         title: "Sign-in Failed",
         description: description,
       });
+      setIsSigningIn(false);
     }
   };
 
@@ -89,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, signOut, isInitialized };
+  const value = { user, loading, signInWithGoogle, signOut, isInitialized, isSigningIn };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

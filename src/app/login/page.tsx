@@ -19,7 +19,7 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading, isInitialized } = useAuth();
+  const { user, signInWithGoogle, loading, isInitialized, isSigningIn } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -47,9 +47,15 @@ export default function LoginPage() {
           <CardDescription>Sign in to place your order</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={signInWithGoogle} disabled={!isInitialized}>
-            <GoogleIcon />
-            Sign in with Google
+          <Button className="w-full" onClick={signInWithGoogle} disabled={!isInitialized || isSigningIn}>
+            {isSigningIn ? (
+              "Signing in..."
+            ) : (
+              <>
+                <GoogleIcon />
+                Sign in with Google
+              </>
+            )}
           </Button>
           <p className="mt-4 text-center text-xs text-muted-foreground">
             Only accounts ending with @iiita.ac.in are permitted.
