@@ -25,8 +25,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const email = firebaseUser.email || "";
-        const isAdmin = email === "kings.iiita@gmail.com";
-        const isAllowed = isAdmin || email.endsWith("@iiita.ac.in");
+        const isAdmin = email.toLowerCase() === "kings.iiita@gmail.com";
+        const isAllowed = isAdmin || email.toLowerCase().endsWith("@iiita.ac.in");
 
         if (isAllowed) {
           setUser({ ...firebaseUser, isAdmin });
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           toast({
             variant: "destructive",
             title: "Access Denied",
-            description: "Only @iiita.ac.in accounts are allowed.",
+            description: "Only accounts ending with @iiita.ac.in are permitted.",
           });
           setUser(null);
         }

@@ -52,7 +52,7 @@ export default function LoginPage() {
             Sign in with Google
           </Button>
           <p className="mt-4 text-center text-xs text-muted-foreground">
-            Only @iiita.ac.in addresses are permitted.
+            Only accounts ending with @iiita.ac.in are permitted.
           </p>
         </CardContent>
       </Card>
