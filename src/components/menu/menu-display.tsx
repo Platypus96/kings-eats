@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,10 +11,11 @@ import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 import { MenuListItem } from './menu-list-item';
 import { Badge } from '../ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '../ui/button';
 
 function MenuSkeleton() {
   return (
@@ -34,11 +36,14 @@ function MenuSkeleton() {
   )
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function MenuDisplay() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -65,8 +70,28 @@ export function MenuDisplay() {
   const filteredItems = menuItems.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   const availableItems = filteredItems.filter(item => item.available);
   const unavailableItems = filteredItems.filter(item => !item.available);
+  const sortedItems = [...availableItems, ...unavailableItems];
+
+  const totalPages = Math.ceil(sortedItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = sortedItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+  
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  }
+  
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  }
 
   if (loading) {
     return <MenuSkeleton />;
@@ -90,7 +115,7 @@ export function MenuDisplay() {
         <Terminal className="h-4 w-4" />
         <AlertTitle>No Items Available</AlertTitle>
         <AlertDescription>
-          The menu is empty right now. The admin can add items from the dashboard.
+          The admin can add items from the dashboard.
         </AlertDescription>
       </Alert>
     );
@@ -110,19 +135,20 @@ export function MenuDisplay() {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {filteredItems.length > 0 ? (
+        {paginatedItems.length > 0 ? (
           <div className="divide-y">
-              {availableItems.map((item) => (
-                <MenuListItem key={item.id} item={item} disabled={!user} />
-              ))}
-              {unavailableItems.map((item) => (
-                 <div key={item.id} className="p-4 flex justify-between items-center opacity-50">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">₹{item.price}</p>
+              {paginatedItems.map((item) => (
+                item.available ? (
+                  <MenuListItem key={item.id} item={item} disabled={!user} />
+                ) : (
+                  <div key={item.id} className="p-4 flex justify-between items-center opacity-50">
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">₹{item.price}</p>
+                    </div>
+                    <Badge variant="outline">Unavailable</Badge>
                   </div>
-                  <Badge variant="outline">Unavailable</Badge>
-                </div>
+                )
               ))}
           </div>
         ) : (
@@ -131,7 +157,19 @@ export function MenuDisplay() {
           </div>
         )}
       </CardContent>
+       {totalPages > 1 && (
+        <div className="flex justify-center items-center p-4 gap-4">
+          <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button onClick={handleNextPage} disabled={currentPage === totalPages} variant="outline">
+            Next
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
-
