@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Utensils } from "lucide-react";
+import { Utensils, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { UserNav } from "@/components/auth/user-nav";
 import { Button } from "@/components/ui/button";
@@ -29,14 +29,6 @@ export function Header() {
             >
               Menu
             </Link>
-            {user && !user.isAdmin && (
-              <Link
-                href="/orders"
-                className="transition-colors hover:text-foreground/80 text-foreground/60"
-              >
-                My Orders
-              </Link>
-            )}
             {user?.isAdmin && (
                <Link
                 href="/dashboard"
@@ -52,7 +44,17 @@ export function Header() {
             <Skeleton className="h-8 w-20" />
           ) : user ? (
             <>
-              {!user.isAdmin && <Notifications />}
+              {!user.isAdmin && (
+                <>
+                  <Notifications />
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href="/orders">
+                      <CreditCard className="h-5 w-5" />
+                       <span className="sr-only">My Orders</span>
+                    </Link>
+                  </Button>
+                </>
+              )}
               <CartIcon />
               <UserNav />
             </>
