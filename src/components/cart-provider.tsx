@@ -41,7 +41,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         title: "Added to cart",
         description: `${quantity} x ${item.name} added to your cart.`,
     })
-    setCartOpen(true);
   };
 
   const removeFromCart = (itemId: string) => {
