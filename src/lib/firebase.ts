@@ -5,12 +5,13 @@ import { getFirestore } from "firebase/firestore";
 // IMPORTANT: Replace with your own Firebase configuration
 // and store it securely in environment variables.
 const firebaseConfig = {
-  apiKey: "AIzaSyB...-placeholder",
-  authDomain: "kings-eats-app.firebaseapp.com",
-  projectId: "kings-eats-app",
-  storageBucket: "kings-eats-app.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:placeholder"
+  "projectId": "kings-eats",
+  "appId": "1:28673527477:web:ceb6ce86bbfdf57910b8fc",
+  "storageBucket": "kings-eats.firebasestorage.app",
+  "apiKey": "AIzaSyDUZ_mGIyyfDtm30EcKaEHx9Ow76NOS3q4",
+  "authDomain": "kings-eats.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "28673527477"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
