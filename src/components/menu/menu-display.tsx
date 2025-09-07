@@ -36,7 +36,7 @@ function MenuSkeleton() {
   )
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 export function MenuDisplay() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
