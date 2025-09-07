@@ -28,7 +28,7 @@ export function Header() {
             >
               Menu
             </Link>
-            {user && (
+            {user && !user.isAdmin && (
               <Link
                 href="/orders"
                 className="transition-colors hover:text-foreground/80 text-foreground/60"

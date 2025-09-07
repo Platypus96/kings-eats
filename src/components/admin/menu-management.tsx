@@ -7,11 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { addMenuItem, deleteMenuItem, updateMenuItem } from '@/app/actions';
+import { deleteMenuItem } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { EditMenuItemDialog } from './edit-menu-item-dialog';
 import { Badge } from '../ui/badge';
-import Image from 'next/image';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -94,8 +93,7 @@ export function MenuManagement() {
                     <TableBody>
                         {menuItems.map((item) => (
                             <TableRow key={item.id}>
-                                <TableCell className="flex items-center gap-4">
-                                    <Image src={item.imageUrl} alt={item.name} width={40} height={40} className="rounded-sm object-cover" data-ai-hint={item['data-ai-hint']}/>
+                                <TableCell>
                                     <span className="font-medium">{item.name}</span>
                                 </TableCell>
                                 <TableCell className="text-center">₹{item.price}</TableCell>
