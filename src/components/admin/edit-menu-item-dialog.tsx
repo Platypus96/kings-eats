@@ -57,7 +57,7 @@ export function EditMenuItemDialog({ isOpen, setIsOpen, item, onFinished }: Edit
     const dataToSave = {
         ...values,
         description: item?.description || "",
-        imageUrl: item?.imageUrl || `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 100)}`,
+        imageUrl: item?.imageUrl || `https://picsum.photos/seed/${Date.now()}/400/300`,
     }
 
     const result = item
