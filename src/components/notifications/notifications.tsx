@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, Check } from "lucide-react";
+import { Mail, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -76,7 +76,7 @@ export function Notifications() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Mail className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               {unreadCount}
@@ -102,7 +102,7 @@ export function Notifications() {
                            <Link href="/orders" className="block">
                                 <p className="text-sm">{n.message}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
+                                    {n.createdAt ? formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true }) : ''}
                                 </p>
                            </Link>
                            {!n.read && (
