@@ -10,6 +10,7 @@ interface PlaceOrderPayload {
   items: CartItem[];
   total: number;
   phone: string;
+  hostel: string;
   instructions?: string;
 }
 

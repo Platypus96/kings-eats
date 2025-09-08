@@ -9,6 +9,13 @@ import {
   SheetFooter,
   SheetClose,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useCart } from "@/hooks/use-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,14 +28,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+const hostels = ["BH1", "BH2", "BH3", "BH4", "BH5", "GH1", "GH2"];
+
 export function CartSheet() {
   const { cart, removeFromCart, updateQuantity, cartTotal, itemCount, isCartOpen, setCartOpen, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [phone, setPhone] = useState("");
+  const [hostel, setHostel] = useState("");
   const [instructions, setInstructions] = useState("");
   const router = useRouter();
+
+  const discount = cartTotal * 0.05;
+  const finalTotal = cartTotal - discount;
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -47,6 +60,14 @@ export function CartSheet() {
       });
       return;
     }
+    if (!hostel) {
+      toast({
+        variant: "destructive",
+        title: "Hostel Required",
+        description: "Please select your hostel.",
+      });
+      return;
+    }
 
     setIsPlacingOrder(true);
     try {
@@ -54,8 +75,9 @@ export function CartSheet() {
         userId: user.uid,
         userEmail: user.email!,
         items: cart,
-        total: cartTotal,
+        total: finalTotal,
         phone,
+        hostel,
         instructions,
       });
 
@@ -66,6 +88,7 @@ export function CartSheet() {
         });
         clearCart();
         setPhone("");
+        setHostel("");
         setInstructions("");
         setCartOpen(false);
         router.push('/orders');
@@ -123,6 +146,17 @@ export function CartSheet() {
                 <Label htmlFor="phone">Phone Number <span className="text-destructive">*</span></Label>
                 <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" required />
               </div>
+               <div>
+                <Label htmlFor="hostel">Hostel <span className="text-destructive">*</span></Label>
+                <Select value={hostel} onValueChange={setHostel} required>
+                  <SelectTrigger id="hostel">
+                    <SelectValue placeholder="Select your hostel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hostels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label htmlFor="instructions">Special Instructions</Label>
                 <Textarea id="instructions" value={instructions} onChange={(e) => setInstructions(e.target.value)} placeholder="Any special requests for your order?" />
@@ -130,9 +164,17 @@ export function CartSheet() {
             </div>
             <SheetFooter className="px-6 py-4 mt-auto bg-secondary/50">
               <div className="w-full space-y-4">
-                 <div className="flex justify-between text-lg font-semibold">
+                 <div className="flex justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span>₹{cartTotal.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between text-sm text-green-500">
+                  <span>Discount (5%)</span>
+                  <span>- ₹{discount.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between text-lg font-semibold border-t pt-2 mt-2">
                   <span>Total</span>
-                  <span>₹{cartTotal}</span>
+                  <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
                 <Button onClick={handlePlaceOrder} className="w-full" disabled={isPlacingOrder}>
                   {isPlacingOrder ? "Placing Order..." : "Place Order"}

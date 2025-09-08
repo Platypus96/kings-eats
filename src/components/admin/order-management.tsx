@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Terminal, Mail, Phone, Info } from 'lucide-react';
+import { MoreHorizontal, Terminal, Mail, Phone, Info, Home } from 'lucide-react';
 import { updateOrderStatus } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
@@ -121,6 +121,7 @@ export function OrderManagement() {
                                 <TableCell>
                                     <div className="font-medium flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /> {order.userEmail}</div>
                                     <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1"><Phone className="h-3 w-3" /> {order.phone}</div>
+                                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-1"><Home className="h-3 w-3" /> {order.hostel}</div>
                                     <div className="text-xs text-muted-foreground mt-1">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</div>
                                     {order.instructions && (
                                         <div className="text-xs text-blue-400 mt-2 p-2 bg-blue-500/10 rounded-md flex items-start gap-2">
@@ -130,7 +131,7 @@ export function OrderManagement() {
                                     )}
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</TableCell>
-                                <TableCell className="hidden sm:table-cell text-center">₹{order.total}</TableCell>
+                                <TableCell className="hidden sm:table-cell text-center">₹{order.total.toFixed(2)}</TableCell>
                                 <TableCell className="text-center"><OrderStatusBadge status={order.status} /></TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>

@@ -34,6 +34,7 @@ export interface Order {
   userId: string;
   userEmail: string;
   phone: string;
+  hostel: string;
   instructions?: string;
   items: CartItem[];
   total: number;
