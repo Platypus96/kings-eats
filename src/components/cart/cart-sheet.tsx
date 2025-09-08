@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export function CartSheet() {
   const router = useRouter();
 
   const discount = cartTotal * 0.05;
-  const finalTotal = cartTotal - discount;
+  const finalTotal = Math.round(cartTotal - discount);
 
   const handlePlaceOrder = async () => {
     if (!user) {
