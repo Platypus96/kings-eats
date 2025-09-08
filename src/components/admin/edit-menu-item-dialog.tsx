@@ -54,15 +54,9 @@ export function EditMenuItemDialog({ isOpen, setIsOpen, item, onFinished }: Edit
   }, [item, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const dataToSave = {
-        ...values,
-        description: item?.description || "",
-        imageUrl: item?.imageUrl || `https://picsum.photos/seed/${Date.now()}/400/300`,
-    }
-
     const result = item
-      ? await updateMenuItem(item.id, dataToSave)
-      : await addMenuItem(dataToSave);
+      ? await updateMenuItem(item.id, values)
+      : await addMenuItem(values);
 
     if (result.success) {
       toast({ title: "Success", description: result.message });

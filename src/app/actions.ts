@@ -79,9 +79,14 @@ export async function updateMenuItem(itemId: string, data: Partial<MenuItem>) {
     }
 }
 
-export async function addMenuItem(data: Omit<MenuItem, 'id'>) {
+export async function addMenuItem(data: Omit<MenuItem, 'id' | 'imageUrl' | 'description'>) {
     try {
-        await addDoc(collection(db, "menu"), data);
+        const dataToSave = {
+            ...data,
+            description: "", // Default empty description
+            imageUrl: `https://picsum.photos/seed/${Date.now()}/400/300`,
+        };
+        await addDoc(collection(db, "menu"), dataToSave);
         return { success: true, message: "Menu item added." };
     } catch (error) {
         console.error("Error adding menu item:", error);
