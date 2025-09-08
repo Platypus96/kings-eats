@@ -5,15 +5,15 @@ Kings Eats is a modern, real-time food ordering application designed for the Kin
 ## ✨ Features
 
 -   **Google Authentication**: Secure sign-in restricted to `@iiita.ac.in` email addresses.
--   **Dynamic Menu**: Browse today's special menu with real-time availability and search functionality.
--   **Shopping Cart**: Easily add and manage items in a persistent shopping cart.
--   **Order Placement**: A straightforward checkout process to place orders.
+-   **Dynamic Menu**: Browse today's special menu with real-time availability and pagination.
+-   **Shopping Cart**: Easily add and manage items in a persistent shopping cart with an automatic 5% discount on the total.
+-   **Order Placement**: A straightforward checkout process with mandatory hostel selection.
 -   **Real-time Order Tracking**: Users can view the status of their orders (`Pending`, `Approved`, `Completed`) on their personal order page.
--   **Live Notifications**: Receive instant notifications when an order is approved, including the estimated completion time.
+-   **Live Notifications**: Receive instant notifications, with phone vibration, when an order is approved, including the estimated completion time.
 -   **Admin Dashboard**: A dedicated dashboard for canteen administrators to:
     -   Manage all incoming orders in real-time.
     -   Approve or decline orders.
-    -   Manage the daily menu, including adding, editing, and setting item availability.
+    -   Manage the daily menu with search and pagination, including adding, editing, and setting item availability.
 
 ## 🚀 Tech Stack
 
