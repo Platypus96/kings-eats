@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Mail, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ export function Notifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     if (!user) return;
@@ -35,6 +36,17 @@ export function Notifications() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifs: Notification[] = [];
       let count = 0;
+      let hasNewUnread = false;
+
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const data = change.doc.data();
+          if (!data.read && !isInitialLoad.current) {
+            hasNewUnread = true;
+          }
+        }
+      });
+      
       snapshot.forEach((doc) => {
         const data = doc.data() as Omit<Notification, 'id'>;
         if (!data.read) {
@@ -42,11 +54,23 @@ export function Notifications() {
         }
         notifs.push({ id: doc.id, ...data });
       });
+
       setNotifications(notifs);
       setUnreadCount(count);
+      
+      if (hasNewUnread) {
+          if (navigator.vibrate) {
+              navigator.vibrate(200); // Vibrate for 200ms
+          }
+      }
+      
+      isInitialLoad.current = false;
     });
 
-    return () => unsubscribe();
+    return () => {
+        isInitialLoad.current = true;
+        unsubscribe();
+    }
   }, [user]);
 
   const handleMarkAsRead = async (notificationId: string) => {
