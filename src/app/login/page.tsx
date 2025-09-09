@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -23,12 +24,12 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
+    if (isInitialized && user) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [user, isInitialized, router]);
   
-  if (loading || user || !isInitialized) {
+  if (loading || !isInitialized || user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>

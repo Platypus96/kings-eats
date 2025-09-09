@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -47,15 +48,19 @@ export function OrderManagement() {
 
     const handleStatusUpdate = async (order: Order, status: OrderStatus, completionTime: Date | null = null) => {
         
-        let message = '';
-        if (status === 'Approved' && completionTime) {
-            message = `Your order has been approved and will be ready around ${format(completionTime, 'p')}.`;
-        } else if (status === 'Declined') {
-            message = `Your order has been declined. Please contact the canteen for more information.`;
-        } else if (status === 'Out for Delivery') {
-             message = `Your order is out for delivery!`;
-        } else if (status === 'Completed') {
-            message = `Your order is now marked as completed. Thank you!`;
+        const messages: Record<OrderStatus, (time?: Date) => string> = {
+            'Approved': (time) => `Your order has been approved and will be ready around ${format(time!, 'p')}.`,
+            'Declined': () => `Your order has been declined. Please contact the canteen for more information.`,
+            'Out for Delivery': () => `Your order is out for delivery!`,
+            'Completed': () => `Your order is now marked as completed. Thank you!`,
+            'Pending': () => '', // No message for pending
+        }
+
+        const message = messages[status](completionTime);
+        
+        if (!message && status !== 'Pending') {
+            // Avoid sending empty notifications unless it's a known case
+            console.warn(`No notification message defined for status: ${status}`);
         }
 
         const result = await updateOrderStatus(order.id, status, completionTime, order.userId, message);
