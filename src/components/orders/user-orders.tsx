@@ -95,8 +95,8 @@ export function UserOrders({ userId }: { userId: string }) {
             <TableRow>
               <TableHead>Order Details</TableHead>
               <TableHead className="hidden md:table-cell text-center">Total</TableHead>
-              <TableHead className="hidden sm:table-cell text-center">Status</TableHead>
-              <TableHead className="text-right">Date</TableHead>
+              <TableHead className="text-right sm:text-center">Status</TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -106,9 +106,6 @@ export function UserOrders({ userId }: { userId: string }) {
                   <div className="font-medium">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1"><Home className="h-3 w-3" /> {order.hostel}</div>
                   <div className="text-sm text-muted-foreground md:hidden">Total: ₹{order.total.toFixed(2)}</div>
-                   <div className="mt-2 sm:hidden">
-                    <OrderStatusBadge status={order.status} />
-                  </div>
                   {order.status === 'Approved' && order.completionTime && (
                      <div className="flex items-center text-sm text-green-500 mt-2">
                         <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -117,8 +114,8 @@ export function UserOrders({ userId }: { userId: string }) {
                   )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-center">₹{order.total.toFixed(2)}</TableCell>
-                <TableCell className="hidden sm:table-cell text-center"><OrderStatusBadge status={order.status} /></TableCell>
-                <TableCell className="text-right">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</TableCell>
+                <TableCell className="text-right sm:text-center"><OrderStatusBadge status={order.status} /></TableCell>
+                <TableCell className="hidden sm:table-cell text-right">{order.createdAt ? format(order.createdAt.toDate(), 'PPp') : ''}</TableCell>
               </TableRow>
             ))}
           </TableBody>
