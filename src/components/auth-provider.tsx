@@ -32,12 +32,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        const email = firebaseUser.email || "";
-        const isAdmin = email.toLowerCase() === "project.kingseats@gmail.com";
-        const isAllowed = isAdmin || email.toLowerCase().endsWith("@iiita.ac.in");
+        const email = firebaseUser.email?.toLowerCase() || "";
+        const isAdmin = email === "project.kingseats@gmail.com";
+        const isAllowed = isAdmin || email.endsWith("@iiita.ac.in");
 
         if (isAllowed) {
-          setUser({ ...firebaseUser, isAdmin });
+          setUser({ ...firebaseUser, isAdmin, email });
         } else {
           firebaseSignOut(auth);
           toast({

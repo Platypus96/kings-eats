@@ -24,17 +24,25 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isInitialized && user) {
+    // Redirect if the user is already logged in and the auth state is fully loaded.
+    if (!loading && user) {
       router.push("/");
     }
-  }, [user, isInitialized, router]);
+  }, [user, loading, router]);
   
-  if (loading || !isInitialized || user) {
+  // Show a loading spinner while the auth state is being determined.
+  if (loading || (!isInitialized && !user)) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
       </div>
     );
+  }
+
+  // If the user is logged in, they will be redirected by the useEffect.
+  // This state prevents the login card from flashing briefly for a logged-in user.
+  if (user) {
+    return null;
   }
 
   return (

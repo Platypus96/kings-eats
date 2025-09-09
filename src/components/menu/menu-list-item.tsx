@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/hooks/use-cart";
 import type { MenuItem } from "@/lib/types";
 import { Plus, Minus, ShoppingCart } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 interface MenuListItemProps {
   item: MenuItem;
@@ -15,12 +16,19 @@ interface MenuListItemProps {
 export function MenuListItem({ item, disabled }: MenuListItemProps) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { toast } = useToast();
 
   const handleAddToCart = () => {
-    if (quantity > 0) {
-      addToCart(item, quantity);
-      setQuantity(1); // Reset quantity after adding to cart
+    if (quantity <= 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Quantity',
+        description: 'Please enter a quantity greater than zero.',
+      });
+      return;
     }
+    addToCart(item, quantity);
+    setQuantity(1); // Reset quantity after adding to cart
   };
 
   const handleQuantityChange = (amount: number) => {
