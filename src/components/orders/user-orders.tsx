@@ -106,6 +106,9 @@ export function UserOrders({ userId }: { userId: string }) {
                   <div className="font-medium">{order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</div>
                   <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1"><Home className="h-3 w-3" /> {order.hostel}</div>
                   <div className="text-sm text-muted-foreground md:hidden">Total: ₹{order.total.toFixed(2)}</div>
+                   <div className="mt-2 sm:hidden">
+                    <OrderStatusBadge status={order.status} />
+                  </div>
                   {order.status === 'Approved' && order.completionTime && (
                      <div className="flex items-center text-sm text-green-500 mt-2">
                         <CheckCircle2 className="h-4 w-4 mr-2" />
