@@ -175,7 +175,7 @@ export function MenuDisplay() {
         )}
       </CardContent>
        {totalPages > 1 && (
-        <div className="flex justify-center items-center p-4 gap-4">
+        <div className="flex justify-center items-center p-4 gap-4 border-t">
           <Button onClick={handlePrevPage} disabled={currentPage === 1} variant="outline">
             Previous
           </Button>
