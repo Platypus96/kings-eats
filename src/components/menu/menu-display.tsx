@@ -3,10 +3,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import type { MenuItem } from "@/lib/types";
+import type { MenuItem, CanteenStatus } from "@/lib/types";
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Search } from 'lucide-react';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { Terminal, Search, ShoppingCart } from 'lucide-react';
+import { collection, onSnapshot, query, orderBy, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
@@ -40,16 +40,28 @@ const ITEMS_PER_PAGE = 5;
 
 export function MenuDisplay() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [canteenStatus, setCanteenStatus] = useState<CanteenStatus['status']>('taking_orders');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  useEffect(() => {
+    const settingsRef = doc(db, "settings", "canteen");
+    const unsubscribeStatus = onSnapshot(settingsRef, (doc) => {
+        if (doc.exists()) {
+            setCanteenStatus(doc.data().status);
+        }
+    });
+
+    return () => unsubscribeStatus();
+  }, []);
 
   useEffect(() => {
     const q = query(collection(db, "menu"), orderBy("name"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribeMenu = onSnapshot(q, (querySnapshot) => {
         const items: MenuItem[] = [];
         querySnapshot.forEach((doc) => {
             items.push({ id: doc.id, ...doc.data() } as MenuItem);
@@ -64,8 +76,10 @@ export function MenuDisplay() {
         setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeMenu();
   }, [toast]);
+  
+  const isCanteenClosed = canteenStatus === 'not_taking_orders';
   
   const filteredItems = menuItems.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -109,18 +123,6 @@ export function MenuDisplay() {
     );
   }
 
-  if (menuItems.length === 0 && !loading) {
-    return (
-      <Alert>
-        <Terminal className="h-4 w-4" />
-        <AlertTitle>No Items Available</AlertTitle>
-        <AlertDescription>
-          The admin can add items from the dashboard.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <Card>
        <CardHeader>
@@ -134,12 +136,27 @@ export function MenuDisplay() {
           />
         </div>
       </CardHeader>
+       {isCanteenClosed && (
+        <div className="p-4 border-b">
+          <Alert variant="destructive">
+            <ShoppingCart className="h-4 w-4" />
+            <AlertTitle>Not Taking Orders</AlertTitle>
+            <AlertDescription>
+              The canteen is currently closed for new orders. Please check back later.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <CardContent className="p-0">
-        {paginatedItems.length > 0 ? (
+        {menuItems.length === 0 && !loading ? (
+           <div className="text-center py-16">
+             <p className="text-muted-foreground">The menu is empty. The admin can add items from the dashboard.</p>
+           </div>
+        ) : paginatedItems.length > 0 ? (
           <div className="divide-y">
               {paginatedItems.map((item) => (
                 item.available ? (
-                  <MenuListItem key={item.id} item={item} disabled={!user} />
+                  <MenuListItem key={item.id} item={item} disabled={!user || isCanteenClosed} />
                 ) : (
                   <div key={item.id} className="p-4 flex justify-between items-center opacity-50">
                     <div>

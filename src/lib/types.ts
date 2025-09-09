@@ -18,7 +18,7 @@ export interface CartItem extends MenuItem {
   quantity: number;
 }
 
-export type OrderStatus = 'Pending' | 'Approved' | 'Declined' | 'Completed';
+export type OrderStatus = 'Pending' | 'Approved' | 'Declined' | 'Out for Delivery' | 'Completed';
 
 export interface Notification {
   id: string;
@@ -26,6 +26,10 @@ export interface Notification {
   message: string;
   read: boolean;
   createdAt: any; // Firestore timestamp
+}
+
+export interface CanteenStatus {
+    status: 'taking_orders' | 'not_taking_orders';
 }
 
 

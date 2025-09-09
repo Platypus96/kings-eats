@@ -52,6 +52,8 @@ export function OrderManagement() {
             message = `Your order has been approved and will be ready around ${format(completionTime, 'p')}.`;
         } else if (status === 'Declined') {
             message = `Your order has been declined. Please contact the canteen for more information.`;
+        } else if (status === 'Out for Delivery') {
+             message = `Your order is out for delivery!`;
         } else if (status === 'Completed') {
             message = `Your order is now marked as completed. Thank you!`;
         }
@@ -144,7 +146,8 @@ export function OrderManagement() {
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem onClick={() => openApproveDialog(order)} disabled={order.status !== 'Pending'}>Approve</DropdownMenuItem>
                                             <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Declined')} disabled={order.status !== 'Pending'}>Decline</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Completed')} disabled={order.status === 'Completed' || order.status === 'Declined'}>Mark as Completed</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Out for Delivery')} disabled={order.status !== 'Approved'}>Mark as Out for Delivery</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleStatusUpdate(order, 'Completed')} disabled={order.status !== 'Out for Delivery'}>Mark as Completed</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

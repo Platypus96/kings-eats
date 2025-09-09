@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const hostels = ["BH1", "BH2", "BH3", "BH4", "BH5", "GH1", "GH2"];
+const hostels = ["Dine-In", "BH1", "BH2", "BH3", "BH4", "BH5", "GH1", "GH2"];
 
 export function CartSheet() {
   const { cart, removeFromCart, updateQuantity, cartTotal, itemCount, isCartOpen, setCartOpen, clearCart } = useCart();
@@ -64,8 +64,8 @@ export function CartSheet() {
     if (!hostel) {
       toast({
         variant: "destructive",
-        title: "Hostel Required",
-        description: "Please select your hostel.",
+        title: "Location Required",
+        description: "Please select your location (Hostel or Dine-In).",
       });
       return;
     }
@@ -148,10 +148,10 @@ export function CartSheet() {
                 <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" required />
               </div>
                <div>
-                <Label htmlFor="hostel">Hostel <span className="text-destructive">*</span></Label>
+                <Label htmlFor="hostel">Location (Hostel / Dine-In) <span className="text-destructive">*</span></Label>
                 <Select value={hostel} onValueChange={setHostel} required>
                   <SelectTrigger id="hostel">
-                    <SelectValue placeholder="Select your hostel" />
+                    <SelectValue placeholder="Select your location" />
                   </SelectTrigger>
                   <SelectContent>
                     {hostels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
@@ -190,7 +190,7 @@ export function CartSheet() {
               <h3 className="mt-4 text-lg font-medium">Your cart is empty</h3>
               <p className="mt-1 text-sm text-muted-foreground">Add some items from the menu to get started.</p>
               <SheetClose asChild>
-                <Button variant="outline" className="mt-6">Continue Shopping</Button>
+                <Button variant="outline" className="mt-6">Browse the Menu</Button>
               </SheetClose>
             </div>
           </div>

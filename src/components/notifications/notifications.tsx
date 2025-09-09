@@ -23,6 +23,12 @@ export function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const isInitialLoad = useRef(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // This effect runs on the client, so we can initialize Audio here
+    audioRef.current = new Audio('/notification.mp3');
+  }, [])
 
   useEffect(() => {
     if (!user) return;
@@ -61,6 +67,11 @@ export function Notifications() {
       if (hasNewUnread) {
           if (navigator.vibrate) {
               navigator.vibrate(200); // Vibrate for 200ms
+          }
+          if (audioRef.current) {
+            audioRef.current.play().catch(error => {
+                console.log("Audio playback failed:", error);
+            });
           }
       }
       

@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/firebase";
-import type { CartItem, MenuItem, OrderStatus } from "@/lib/types";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import type { CanteenStatus, CartItem, MenuItem, OrderStatus } from "@/lib/types";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, deleteDoc, getDocs, query, where, writeBatch, documentId } from "firebase/firestore";
 
 interface PlaceOrderPayload {
   userId: string;
@@ -101,5 +101,17 @@ export async function deleteMenuItem(itemId: string) {
     } catch (error) {
         console.error("Error deleting menu item:", error);
         return { success: false, message: "Failed to delete menu item." };
+    }
+}
+
+
+export async function updateCanteenStatus(status: CanteenStatus['status']) {
+    try {
+        const settingsRef = doc(db, "settings", "canteen");
+        await updateDoc(settingsRef, { status: status });
+        return { success: true, message: "Canteen status updated." };
+    } catch (error) {
+        console.error("Error updating canteen status:", error);
+        return { success: false, message: "Failed to update status." };
     }
 }
